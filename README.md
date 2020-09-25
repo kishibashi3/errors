@@ -3,16 +3,25 @@
 grpcアプリケーションのためのエラー基盤。
 
 
-grpc-goはstatus.Statusのようなエラーをハンドリングするためのstructを持っている。
-単にエラーを返したいだけなら、`status.Err()`を返してやればいい。
+grpc-goはstatus.Statusを用いてエラーをハンドリングできるが、以下のような問題点があった。
 
-だが、扱う際に以下のような問題点があった。
+## 1. ErrorLevelの概念が存在しない  
 
-1. ErrorLevelの概念が存在しない  
-    > エラーレベルはStatusと必ずしも紐づくわけではない。
+エラーレベルによって、Sentryにアラートを飛ばすかどうかなど、ハンドリングしたいことはある。
 
-2. causeがない
-    > causeは、
+## 2. causeがない
+ 
+Pythonでは`raise Error() from e` のような、例外の原因となる別の例外を指定することができるが、golangではこれがない。
+
+そのため、pkg/errorsをForkし、拡張して新しくgrpc errorに対応する例外を作成した。
+
+
+# GrpcErrorの機能
+
+* pkg/errorsの既存の例外と同じstack traceを持ち、出力することができる。
+* grpc error情報（status)を持つ。
+* origin (cause)情報をもつ。pkg/errorsもcauseスタックを持っているが、これはエラーのcauseではなく単なるスタックトレース。
+* level（エラーレベル）を持つ。
 
 
 ```go
@@ -32,15 +41,11 @@ origin | error cause
 level | error level
 stack | pkg/errors stack
 
-grpcエラーを返却するための材料としてのstatusを持つ。
-また、エラーをレベルに応じたハンドリングをするためのlevel、それからpkg/errorsの機能であるstackを持つ。
-
-多言語だとerror causeに相当するエラー同士の紐づけが大抵あるが、golangでは見当たらないので、追加。
 
 
 
 
-`go get github.com/kishibashi3/pkg/errors`
+`go get github.com/kishibashi3/grpc/errors`
 
 
 
