@@ -20,7 +20,7 @@ Pythonでは`raise Error() from e` のような、例外の原因となる別の
 
 * pkg/errorsの既存の例外と同じstack traceを持ち、出力することができる。
 * grpc error情報（status)を持つ。
-* origin (cause)情報をもつ。pkg/errorsもcauseスタックを持っているが、これはエラーのcauseではなく単なるスタックトレース。
+* origin (cause)情報をもつ。
 * level（エラーレベル）を持つ。
 
 
@@ -48,4 +48,24 @@ stack | pkg/errors stack
 `go get github.com/kishibashi3/grpc/errors`
 
 
+# 使い方
+
+```go
+package errors
+
+import (
+	"github.com/kishibashi3/go-grpc-errors/errors"
+	"google.golang.org/grpc/codes"
+)
+
+func hoge() error {
+
+	fu, err := fuga()
+	if err != nil {
+		return NewErrorFrom(err, codes.Aborted, "fuga failed")
+	}
+	// do hoge with fu
+	return nil
+}
+```
 
